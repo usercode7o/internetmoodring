@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Internet Mood Ring</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsvectormap/dist/jsvectormap.min.css">
+
+  <style>
+    body {
+      margin: 0;
+      background: #08080d;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      padding: 28px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+    }
+
+    p {
+      color: #b8b8c8;
+    }
+
+    #map {
+      height: 520px;
+      margin: 20px;
+      border-radius: 24px;
+      background: #11111a;
+      overflow: hidden;
+    }
+
+    .controls, .stats-toggle {
+      text-align: center;
+      margin: 20px;
+    }
+
+    button {
+      margin: 6px;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: none;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #11111a;
+      border-radius: 20px;
+    }
+
+    .stats.open {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    td, th {
+      padding: 12px;
+      border-bottom: 1px solid #252535;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Internet Mood Ring</h1>
+    <p>Watch the world’s mood shift in real time.</p>
+  </header>
+
+  <div id="map"></div>
+
+  <div class="controls">
+    <button onclick="vote('Happy')">Happy</button>
+    <button onclick="vote('Calm')">Calm</button>
+    <button onclick="vote('Anxious')">Anxious</button>
+    <button onclick="vote('Sad')">Sad</button>
+    <button onclick="vote('Angry')">Angry</button>
+    <button onclick="vote('Hopeful')">Hopeful</button>
+  </div>
+
+  <div class="stats-toggle">
+    <button onclick="toggleStats()">Show country stats</button>
+  </div>
+
+  <section id="stats" class="stats">
+    <h2>Country stats</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Mood</th>
+          <th>Votes</th>
+          <th>Last updated</th>
+        </tr>
+      </thead>
+      <tbody id="statsBody"></tbody>
+    </table>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsvectormap"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsvectormap/dist/maps/world.js"></script>
+
+  <script>
+    const moodColors = {
+      Happy: "#FFD84D",
+      Calm: "#62D2A2",
+      Anxious: "#5B8CFF",
+      Sad: "#8B6CFF",
+      Angry: "#FF5C5C",
+      Hopeful: "#FF8BD1"
+    };
+
+    const countries = {
+      US: { name: "United States", mood: "Anxious", votes: 1240, updated: "2 minutes ago" },
+      BR: { name: "Brazil", mood: "Happy", votes: 812, updated: "5 minutes ago" },
+      GB: { name: "United Kingdom", mood: "Calm", votes: 540, updated: "7 minutes ago" },
+      IN: { name: "India", mood: "Hopeful", votes: 1430, updated: "1 minute ago" },
+      JP: { name: "Japan", mood: "Sad", votes: 390, updated: "12 minutes ago" },
+      AU: { name: "Australia", mood: "Calm", votes: 260, updated: "18 minutes ago" },
+      ZA: { name: "South Africa", mood: "Happy", votes: 211, updated: "21 minutes ago" }
+    };
+
+    function countryColors() {
+      const colors = {};
+      Object.keys(countries).forEach(code => {
+        colors[code] = moodColors[countries[code].mood];
+      });
+      return colors;
+    }
+
+    const map = new jsVectorMap({
+      selector: "#map",
+      map: "world",
+      backgroundColor: "#11111a",
+      regionStyle: {
+        initial: { fill: "#242436" },
+        hover: { fill: "#ffffff" }
+      },
+      series: {
+        regions: [{
+          attribute: "fill",
+          scale: countryColors(),
+          values: countryColors()
+        }]
+      },
+      onRegionTooltipShow(event, tooltip, code) {
+        const country = countries[code];
+        if (country) {
+          tooltip.text(
+            country.name + " — " + country.mood + " · " + country.votes + " votes"
+          );
+        }
+      }
+    });
+
+    function vote(mood) {
+      countries.US.mood = mood;
+      countries.US.votes += 1;
+      countries.US.updated = "just now";
+
+      map.series.regions[0].setValues(countryColors());
+      renderStats();
+    }
+
+    function toggleStats() {
+      document.getElementById("stats").classList.toggle("open");
+    }
+
+    function renderStats() {
+      const body = document.getElementById("statsBody");
+      body.innerHTML = "";
+
+      Object.keys(countries).forEach(code => {
+        const country = countries[code];
+
+        body.innerHTML += `
+          <tr>
+            <td>${country.name}</td>
+            <td>${country.mood}</td>
+            <td>${country.votes}</td>
+            <td>${country.updated}</td>
+          </tr>
+        `;
+      });
+    }
+
+    renderStats();
+  </script>
+</body>
+</html>

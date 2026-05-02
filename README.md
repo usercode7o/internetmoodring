@@ -1,4 +1,4 @@
-nternet Mood Ring
+----------Internet Mood Ring---------
 
 I wanted to see what the internet feels like.
 
